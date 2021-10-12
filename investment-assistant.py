@@ -5,7 +5,7 @@ import requests
 # Variables
 ####################################
 # ammount to invest
-investment_in_euro = 200
+investment_in_euro = 300
 # URL from 'floatrates.com' to get exchange data
 usd_exchange_rates_url = "http://www.floatrates.com/daily/usd.json"
 # URL to fetch the USDT/€ price from coinbace.com platform.
@@ -113,7 +113,7 @@ for coin_data in cryptos_staking:
                          coin_current_price_in_euro, round(float(annual_interest)*100, 2)])
 
     # check if it belongs to most profitable coins
-    if ammount_of_coins > 100.0 and interest_per_month_euro > 3.00:
+    if ammount_of_coins > 1.0 and interest_per_month_euro > 3.00:
         most_profitable_coins.append(
             [coin_name, ammount_of_coins, interest_per_month_euro, locked_days])
 
@@ -157,6 +157,6 @@ for coin in sorted(coins_90, key=lambda x: (float(x[1]), float(x[2]))):
 print("\n---------------------------------------------------------------------------------------------------")
 print("Most profitable coins to invest")
 print("---------------------------------------------------------------------------------------------------")
-print("{:<10} {:<25} {:<20}".format('Coin', 'Number of bought coins', 'Monthly profit (€)', 'Investment Days'))
-for coin in sorted(most_profitable_coins, key=lambda x: (float(x[1]), float(x[2])), reverse=True):
-    print("{:<10} {:<25} {:<20}".format(coin[0], coin[1], coin[2], coin[3]))
+print("{:<10} {:<25} {:<20} {:<20}".format('Coin', 'Number of bought coins', 'Monthly profit (€)', 'Investment duration (days)'))
+for coin in sorted(most_profitable_coins, key=lambda x: (float(x[2])), reverse=True):
+    print("{:<10} {:<25} {:<20} {:<20}".format(coin[0], coin[1], round(float(coin[2]),2), coin[3]))
