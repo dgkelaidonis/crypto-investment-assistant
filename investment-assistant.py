@@ -67,7 +67,7 @@ for coin in binance_json_data["data"]:
         if coin_staking_option["sellOut"] == False:
             # [coin_name, coin_current_value, annual_interest_%, locked_in_days]
             cryptos_staking.append([coin["asset"], coin_staking_option["duration"],
-                                    coin_staking_option["config"]["annualInterestRate"]])
+                                    coin_staking_option["config"]["annualInterestRate"], coin_staking_option["config"]["maxPurchaseAmountPerUser"]])
 
 
 ############################################
@@ -75,7 +75,7 @@ for coin in binance_json_data["data"]:
 ############################################
 for coin_data in cryptos_staking:
     # map the data to variables
-    coin_name, locked_days, annual_interest = coin_data
+    coin_name, locked_days, annual_interest, investment_constraint = coin_data
 
     # init the coin price to defaults
     coin_current_price_in_euro = usd_to_euro
@@ -88,32 +88,34 @@ for coin_data in cryptos_staking:
     # the ammount of coins you buy with the investment
     ammount_of_coins = round(
         float(investment_in_euro)/float(coin_current_price_in_euro), 2)
-    # the yearly profit (coins)
-    interest_per_year = float(
+    # the yearly profit
+    interest_per_year_in_coins = float(
         annual_interest)*float(round(ammount_of_coins))
-    # the daily profit (coins)
-    interest_per_day_coin = interest_per_year/365
-    interest_per_day_euro = round(
-        float(interest_per_day_coin*coin_current_price_in_euro), 5)
-    # the monthly profit (coins)
-    interest_per_month_coin = round(float(interest_per_day_coin*30), 4)
-    interest_per_month_euro = round(
-        float(interest_per_month_coin*coin_current_price_in_euro), 5)
+    # daily profit
+    interest_per_day_in_coins = round(float(interest_per_year_in_coins/365), 4)
+    interest_per_day_in_euro = round(
+        float(interest_per_day_in_coins)*float(coin_current_price_in_euro), 2)
+    # the monthly profit
+    #interest_per_month_in_coins = round(float(interest_per_day_in_coins*30), 4)
+    # interest_per_month_in_euro = '
 
-    # classify the investment options based on the investment duration in days
+    # init elements for the investment coins options
     if int(locked_days) not in investment_coins_options:
         investment_coins_options.update({int(locked_days): []})
-        investment_coins_options.get(int(locked_days)).append([coin_name, ammount_of_coins, interest_per_month_euro,
-                                                               coin_current_price_in_euro, round(float(annual_interest)*100, 2)])
-    else:
-        investment_coins_options.get(int(locked_days)).append([coin_name, ammount_of_coins, interest_per_month_euro,
-                                                               coin_current_price_in_euro, round(float(annual_interest)*100, 2)])
+
+    # calculate the total ROI for the current based on the number of coin
+    allowed_coins_for_investment = round(float(investment_constraint), 3) if float(investment_constraint) < float(ammount_of_coins) else float(ammount_of_coins)
+    # calculate the total ROI based on the coins that may be invested in the given investment duration (locked days)
+    coin_roi_in_euro = round(interest_per_day_in_euro *
+                             allowed_coins_for_investment, 2)
+    # classify the investment options based on the investment duration in days
+    investment_coins_options.get(int(locked_days)).append(
+        [coin_name, ammount_of_coins, allowed_coins_for_investment, coin_current_price_in_euro, round(float(annual_interest)*100, 2), coin_roi_in_euro])
 
     # check if it belongs to most profitable coins
-    if ammount_of_coins > 1.0 and interest_per_month_euro > 3.00:
+    if ammount_of_coins > 1.0 and coin_roi_in_euro > 2.00:
         most_profitable_coins.append(
-            [coin_name, ammount_of_coins, interest_per_month_euro, locked_days])
-
+            [coin_name, ammount_of_coins, locked_days, coin_roi_in_euro])
 
 # Print all available coins to the corresponding duration
 for k in investment_coins_options:
@@ -121,19 +123,17 @@ for k in investment_coins_options:
     print(k, " Days Investment. Found: ", len(
         investment_coins_options.get(k)), " coins.")
     print("---------------------------------------------------------------------------------------------------")
-    print("{:<10} {:<25} {:<20} {:<20} {:<25}".format('Coin', 'Number of bought coins',
-                                                      'Monthly profit (€)', 'Price (€)', 'Annual Interest (%)'))
-    for coin in sorted(investment_coins_options.get(k), key=lambda x: (float(x[1]), float(x[2])), reverse=True):
-        print("{:<10} {:<25} {:<20} {:<20} {:<25}".format(
-            coin[0], coin[1], coin[2], coin[3], coin[4]))
+    print("{:<10} {:<25} {:<25} {:<20} {:<20} {:<20} {:<25}".format(
+        'Coin', 'Total Investment (coins)', 'Allowed Investment (coins)', 'Duration (days)', 'Price (€)', 'APY (%)', 'ROI (€)'))
+    for coin in sorted(investment_coins_options.get(k), key=lambda x: (float(x[4])), reverse=True):
+        print("{:<10} {:<25} {:<25} {:<20} {:<20} {:<20} {:<25}".format(coin[0], coin[1], coin[2], coin[3], int(k), coin[4], coin[5]))
 
 
 # Propose the top-X coins in terms of monthly-interests
 print("\n---------------------------------------------------------------------------------------------------")
 print("Best coins with the highest profit based on investment duration")
 print("---------------------------------------------------------------------------------------------------")
-print("{:<10} {:<25} {:<20} {:<20} {:<20}".format('Coin', 'Bought coins',
-      'Monthly profit (€)', 'Duration (days)', 'Profit (€)'))
-for coin in sorted(most_profitable_coins, key=lambda x: (float(x[2])), reverse=True):
-    print("{:<10} {:<25} {:<20} {:<20} {:<20}".format(
-        coin[0], coin[1], round(float(coin[2]), 2), coin[3], round(int(coin[3])*round(float(coin[2])/30, 2))), 2)
+print("{:<10} {:<25} {:<20} {:<20}".format('Coin', 'Invested coins', 'Duration (days)', 'ROI (€)'))
+for coin in sorted(most_profitable_coins, key=lambda x: (float(x[3])), reverse=True):
+    print("{:<10} {:<25} {:<20} {:<20}".format(
+        coin[0], coin[1], coin[2], coin[3]))
