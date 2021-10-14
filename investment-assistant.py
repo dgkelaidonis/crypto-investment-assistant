@@ -5,7 +5,7 @@ import requests
 # Variables
 ####################################
 # ammount to invest
-investment_in_euro = 300
+investment_in_euro = 304
 # URL from 'floatrates.com' to get exchange data
 usd_exchange_rates_url = "http://www.floatrates.com/daily/usd.json"
 # URL to fetch the USDT/€ price from coinbace.com platform.
@@ -116,10 +116,10 @@ for k in investment_coins_options:
     print(k, " Days Investment. Found: ", len(
         investment_coins_options.get(k)), " coins.")
     print("---------------------------------------------------------------------------------------------------")
-    print("{:<10} {:<25} {:<25} {:<20} {:<20} {:<20} {:<25}".format(
+    print("{:<10} {:<25} {:<25} {:<25} {:<20} {:<20} {:<25}".format(
         'Coin', 'Total Investment (coins)', 'Allowed Investment (coins)', 'Duration (days)', 'Price (€)', 'APY (%)', 'ROI (€)'))
     for coin in sorted(investment_coins_options.get(k), key=lambda x: (float(x[4])), reverse=True):
-        print("{:<10} {:<25} {:<25} {:<20} {:<20} {:<20} {:<25}".format(coin[0], coin[1], coin[2], int(k), coin[3], coin[4], coin[5]))
+        print("{:<10} {:<25} {:<25} {:<25} {:<20} {:<20} {:<25}".format(coin[0], coin[1], coin[2], int(k), coin[3], coin[4], coin[5]))
 
 
 # Propose the top-X coins in terms of monthly-interests
