@@ -5,7 +5,7 @@ import requests
 # Variables
 ####################################
 # ammount to invest
-investment_in_euro = 304
+investment_in_euro = 110
 # URL from 'floatrates.com' to get exchange data
 usd_exchange_rates_url = "http://www.floatrates.com/daily/usd.json"
 # URL to fetch the USDT/€ price from coinbace.com platform.
